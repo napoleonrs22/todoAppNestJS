@@ -1,60 +1,72 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Task } from './task.entity';
+import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class TasksService {
 
-  private tasks: Task[] =[];
+  
+  constructor(private readonly prisma: PrismaService) {
 
-  private nextId = 1;
-
-  getAllTasks():Task[]{
-    return this.tasks;
   }
 
 
-  getTaskById(id: number): Task {
-    const task = this.tasks.find(task => task.id === id);
+  async getAllTasks(): Promise<Task[]>{
+    return this.prisma.task.findMany();
+  }
+
+
+  async getTaskById(id: number): Promise<Task> {
+
+    // const task = await this.prisma.task.findUnique({ where: { id } });
+    // if (!task) {
+    //   throw new NotFoundException(`Task with ID ${id} not found.`);
+    // }
+    // return task;
+
+    const task = await this.prisma.task.findUnique({
+      where: { id: Number(id) } // ✅ Преобразуем id в число
+    });
+
     if (!task) {
-      throw new Error(`Task with ID ${id} not found.`);
-    }
-    return task;
-  }
-  // getTaskById(id : number) :Task{
-  //   return this.tasks.find(task => task.id === id);
-  // }
-
-  createTask(title :string,description:string) :Task{
-    const task:Task={
-      id: this.nextId++,
-      title,
-      description,
-      completed:false,
-    };
-    this.tasks.push(task);
-    return task
-  }
-
-  updateTask(id:number,completed:boolean):Task{
-    const task =this.getTaskById(id);
-
-    if(task){
-      task.completed = completed
+      throw new NotFoundException(`Task with ID ${id} not found.`);
     }
     return task;
   }
 
 
-  deleteTask(id: number): void {
-    const initialLength = this.tasks.length;
-    this.tasks = this.tasks.filter(({ id: taskId }) => taskId !== id);
+  async createTask(title :string,description:string) :Promise<Task>{
+    return this.prisma.task.create({
 
-    if (this.tasks.length === initialLength) {
-      console.warn(`Task with ID ${id} not found.`);
-    }
+      data: {
+        title,
+        description,
+        completed: false,
+      },
+    });
+
   }
 
-  // deleteTask(id:number) :void{
-  //   return 
-  // }
+  async updateTask(id: number, completed: boolean): Promise<Task> {
+
+    const  task = await this.getTaskById(id);
+
+    return this.prisma.task.update({
+      where: { id },
+      data: { completed },
+    });
+  }
+
+
+
+  async deleteTask(id: number): Promise<void> {
+
+    await this.getTaskById(id);
+    await this.prisma.task.delete({ where: { id } });
+
+
+
+  }
+
+
 }
