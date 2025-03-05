@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, Param, Post,Put } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { Task } from './task.entity';
 import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { CreateTaskDto, UpdateTaskDto } from './repository/dto/task.dto';
 
 @ApiTags('tasks')
 @Controller('tasks')
@@ -37,8 +38,8 @@ export class TasksController {
       },
     },
   })
-  async createTask(@Body('title') title:string,  @Body('description')  description: string):Promise<Task>{
-    return  this.taskservice.createTask(title,description);
+  async createTask(@Body() createTaskDto:CreateTaskDto):Promise<Task>{
+    return  this.taskservice.createTask(createTaskDto);
   }
 
   // @Put(':id')
@@ -59,8 +60,8 @@ export class TasksController {
       },
     },
   })
-  async updateTask(@Param('id') id: string, @Body('completed') completed: boolean): Promise<Task> {
-    return this.taskservice.updateTask(Number(id), completed);
+  async updateTask(@Param('id') id: string, @Body('completed') updateTaskDto:UpdateTaskDto): Promise<Task> {
+    return this.taskservice.updateTask(Number(id), updateTaskDto);
   }
 
 
