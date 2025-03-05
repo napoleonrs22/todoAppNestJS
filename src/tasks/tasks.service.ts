@@ -18,14 +18,8 @@ export class TasksService {
 
   async getTaskById(id: number): Promise<Task> {
 
-    // const task = await this.prisma.task.findUnique({ where: { id } });
-    // if (!task) {
-    //   throw new NotFoundException(`Task with ID ${id} not found.`);
-    // }
-    // return task;
-
     const task = await this.prisma.task.findUnique({
-      where: { id: Number(id) } // ✅ Преобразуем id в число
+      where: { id: Number(id) }
     });
 
     if (!task) {
